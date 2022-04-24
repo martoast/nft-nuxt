@@ -1,18 +1,29 @@
 <template>
-  <div class="bg-dark" style="height: 100vh">
-    <b-navbar toggleable>
-      <b-navbar-brand class="text-white" href="#">Logo</b-navbar-brand>
+  <div>
+    <div class="d-block d-md-none">
+      <h1>Not on mobile bitch</h1>
+    </div>
+    <div class="d-none d-md-block">
+      <div class="book">
+        <label for="page-1" class="book__page book__page--1">
+          <div style="height: 100vh"></div>
+        </label>
 
-      <p
-        v-if="initialState.account && initialState.smartContract"
-        class="text-white"
-        style="text-overflow: ellipsis"
-      >
-        ...{{ initialState.truncated_account }}
-      </p>
+        <label for="page-2" class="book__page book__page--3">
+          <img src="/images/CB-1.png" alt="" />
+        </label>
 
-      <b-btn v-else @click="connectWallet">Connect wallet</b-btn>
-    </b-navbar>
+        <!-- Resets the page -->
+        <input type="radio" name="page" id="page-1" />
+
+        <!-- Goes to the second page -->
+        <input type="radio" name="page" id="page-2" />
+
+        <label class="book__page book__page--2">
+          <img src="/images/CB-2.png" alt="" />
+        </label>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -103,3 +114,69 @@ export default {
   },
 };
 </script>
+
+<style lang="scss">
+.book {
+  display: flex;
+  perspective: 1200px;
+
+  &__page {
+    position: relative;
+    width: 50%;
+    height: 100%;
+    display: grid;
+    transform: rotateY(0deg);
+    transition: transform 0.9s cubic-bezier(0.645, 0.045, 0.355, 1);
+    transform-origin: 0% 0%;
+    &--1 {
+      img {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+      }
+    }
+
+    &--2 {
+      cursor: pointer;
+      position: absolute;
+      right: 0;
+      pointer-events: none;
+
+      img {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+      }
+    }
+
+    &--3 {
+      cursor: pointer;
+
+      img {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+      }
+    }
+
+    &--4 {
+      cursor: pointer;
+
+      img {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+      }
+    }
+  }
+
+  input[type="radio"] {
+    display: none;
+
+    &:checked + .book__page {
+      transition: transform 0.9s cubic-bezier(0.645, 0.045, 0.355, 1);
+      transform: rotateY(-180deg);
+    }
+  }
+}
+</style>
