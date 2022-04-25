@@ -24,6 +24,37 @@
         </label>
       </div>
     </div>
+    <b-modal
+      id="wallet-modal"
+      centered
+      hide-header
+      hide-header-close
+      hide-footer
+      no-close-on-backdrop
+      no-close-on-esc
+      size="lg"
+    >
+      <b-container>
+        <div class="text-center">
+          <h2 class="py-3" style="font-family: 'Market'; font-size: 42px">
+            The Comic Book
+          </h2>
+          <p style="font-family: 'Champange'; font-size: 22px" class="py-3">
+            To view this content you must connect your wallet.
+          </p>
+          <b-btn
+            v-if="!initialState.account"
+            @click="connectWallet"
+            style="font-family: 'Market'"
+            >Connect wallet</b-btn
+          >
+
+          <div v-else>
+            <p>{{ initialState.account }}</p>
+          </div>
+        </div>
+      </b-container>
+    </b-modal>
   </div>
 </template>
 
@@ -36,11 +67,11 @@ export default {
   data() {
     return {
       ethereum: null,
-      mintAmount: 1,
       metamaskIsInstalled: false,
       initialState: {
         loading: false,
         account: null,
+        amount_holding: false,
         truncated_account: null,
         smartContract: null,
         web3: null,
@@ -48,20 +79,28 @@ export default {
       },
     };
   },
+
   mounted() {
     this.ethereum = window.ethereum;
     this.metamaskIsInstalled = this.ethereum && this.ethereum.isMetaMask;
+
+    this.$bvModal.show("wallet-modal");
   },
+
   methods: {
-    async getBalance() {
-      await this.initialState.smartContract.methods
+    getBalance() {
+      // GET BALANCE
+      this.initialState.smartContract.methods
         .balanceOf(this.initialState.account)
         .call(function (err, res) {
           if (err) {
             console.log("An error occured", err);
             return;
           } else {
-            return res;
+            if (res) {
+              // this.initialState.amount_holding = res;
+              console.log(res);
+            }
           }
         });
     },
@@ -93,14 +132,7 @@ export default {
 
             console.log(this.initialState);
 
-            // Add listeners start
-            this.ethereum.on("accountsChanged", (accounts) => {
-              dispatch(updateAccount(accounts[0]));
-            });
-            this.ethereum.on("chainChanged", () => {
-              window.location.reload();
-            });
-            // Add listeners end
+            this.getBalance();
           } else {
             alert("Change to the correct network.");
           }
@@ -116,6 +148,22 @@ export default {
 </script>
 
 <style lang="scss">
+@font-face {
+  font-family: "Champange";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("~assets/fonts/Champagne.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Market";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("~assets/fonts/Market.ttf") format("truetype");
+}
+
 .book {
   display: flex;
   perspective: 1200px;
