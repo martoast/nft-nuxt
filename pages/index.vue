@@ -1,18 +1,12 @@
 <template>
-  <div>
+  <div style="background-color: black">
     <div class="d-block d-md-none">
       <h1>Not on mobile bitch</h1>
     </div>
     <div class="d-none d-md-block">
-      <div class="book">
-        <a @click="onPreviousPage()" class="book__page book__page--1">
-          <img class="img-left" src="/images/1.png" alt="" />
-        </a>
-
-        <a @click="onNextPage()" class="book__page book__page--2">
-          <img class="img-right" src="/images/2.png" alt="" />
-        </a>
-      </div>
+      <client-only>
+        <Flipbook class="flipbook" :pages="pages" ref="flipbook"></Flipbook>
+      </client-only>
     </div>
     <b-modal
       id="wallet-modal"
@@ -88,10 +82,18 @@ export default {
         web3: null,
         errorMsg: "",
       },
+      pages: [
+        "/images/1.png",
+        "/images/2.png",
+        "/images/3.png",
+        "/images/4.png",
+      ],
     };
   },
 
   mounted() {
+    this.$bvModal.show("wallet-modal");
+
     this.ethereum = window.ethereum;
     this.metamaskIsInstalled = this.ethereum && this.ethereum.isMetaMask;
 
@@ -102,8 +104,6 @@ export default {
     this.right_img = document.querySelector(".img-right");
 
     this.right_page = document.querySelector(".book__page--2");
-
-    this.$bvModal.show("wallet-modal");
   },
 
   methods: {
@@ -208,55 +208,14 @@ export default {
   src: url("~assets/fonts/Market.ttf") format("truetype");
 }
 
-.modal-backdrop {
-  opacity: 0.9;
+.flipbook {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
 }
 
-.book {
-  display: flex;
-  perspective: 1200px;
-
-  &__page {
-    position: relative;
-    width: 50%;
-    height: 100%;
-    padding: 0;
-    display: grid;
-    transform: rotateY(0deg);
-    transition: transform 0.9s cubic-bezier(0.645, 0.045, 0.355, 1);
-    transform-origin: 0% 0%;
-    &--1 {
-      cursor: pointer;
-      img {
-        width: 100%;
-        max-width: 100%;
-        height: auto;
-      }
-    }
-
-    &--2 {
-      cursor: pointer;
-      position: absolute;
-      right: 0;
-
-      img {
-        width: 100%;
-        max-width: 100%;
-        height: auto;
-      }
-    }
-
-    &--3 {
-      cursor: pointer;
-      position: absolute;
-      right: 0;
-
-      img {
-        width: 100%;
-        max-width: 100%;
-        height: auto;
-      }
-    }
-  }
+.modal-backdrop {
+  opacity: 0.9;
 }
 </style>
