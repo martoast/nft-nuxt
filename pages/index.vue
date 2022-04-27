@@ -1,13 +1,9 @@
 <template>
   <div style="background-color: black">
-    <div class="d-block d-md-none">
-      <h1>Not on mobile bitch</h1>
-    </div>
-    <div class="d-none d-md-block">
-      <client-only>
-        <Flipbook class="flipbook" :pages="pages" ref="flipbook"></Flipbook>
-      </client-only>
-    </div>
+    <client-only>
+      <Flipbook class="flipbook" :pages="pages" ref="flipbook"></Flipbook>
+    </client-only>
+
     <b-modal
       id="wallet-modal"
       centered
