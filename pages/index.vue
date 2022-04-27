@@ -5,23 +5,13 @@
     </div>
     <div class="d-none d-md-block">
       <div class="book">
-        <label for="page-1" class="book__page book__page--1">
-          <div style="height: 100vh"></div>
-        </label>
+        <a @click="onPreviousPage()" class="book__page book__page--1">
+          <img class="img-left" src="/images/1.png" alt="" />
+        </a>
 
-        <label for="page-2" class="book__page book__page--3">
-          <img src="/images/CB-1.png" alt="" />
-        </label>
-
-        <!-- Resets the page -->
-        <input type="radio" name="page" id="page-1" />
-
-        <!-- Goes to the second page -->
-        <input type="radio" name="page" id="page-2" />
-
-        <label class="book__page book__page--2">
-          <img src="/images/CB-2.png" alt="" />
-        </label>
+        <a @click="onNextPage()" class="book__page book__page--2">
+          <img class="img-right" src="/images/2.png" alt="" />
+        </a>
       </div>
     </div>
     <b-modal
@@ -39,18 +29,34 @@
           <h2 class="py-3" style="font-family: 'Market'; font-size: 42px">
             The Comic Book
           </h2>
-          <p style="font-family: 'Champange'; font-size: 22px" class="py-3">
-            To view this content you must connect your wallet.
+          <p style="font-family: 'Champange'; font-size: 22px" class="pb-3">
+            To view this content you must connect your wallet to verify as
+            holder.
           </p>
           <b-btn
             v-if="!initialState.account"
             @click="connectWallet"
-            style="font-family: 'Market'"
+            style="font-family: 'Market'; background-color: black"
             >Connect wallet</b-btn
           >
 
+          <b-btn
+            v-else-if="initialState.amount_holding > 0"
+            @click="onEnterComic"
+            style="font-family: 'Market'; background-color: black"
+          >
+            Enter The Heist
+          </b-btn>
+
+          <h2
+            v-else-if="initialState.amount_holding == 0"
+            style="font-family: 'Market'"
+          >
+            Must be a holder to enter.
+          </h2>
+
           <div v-else>
-            <p>{{ initialState.account }}</p>
+            <b-spinner label="Spinning"></b-spinner>
           </div>
         </div>
       </b-container>
@@ -68,10 +74,15 @@ export default {
     return {
       ethereum: null,
       metamaskIsInstalled: false,
+      left_page: null,
+      left_img: null,
+      right_page: null,
+      right_img: null,
+      current_page: 1,
       initialState: {
         loading: false,
         account: null,
-        amount_holding: false,
+        amount_holding: null,
         truncated_account: null,
         smartContract: null,
         web3: null,
@@ -84,25 +95,26 @@ export default {
     this.ethereum = window.ethereum;
     this.metamaskIsInstalled = this.ethereum && this.ethereum.isMetaMask;
 
+    this.left_img = document.querySelector(".img-left");
+
+    this.left_page = document.querySelector(".book__page--1");
+
+    this.right_img = document.querySelector(".img-right");
+
+    this.right_page = document.querySelector(".book__page--2");
+
     this.$bvModal.show("wallet-modal");
   },
 
   methods: {
-    getBalance() {
-      // GET BALANCE
-      this.initialState.smartContract.methods
-        .balanceOf(this.initialState.account)
-        .call(function (err, res) {
-          if (err) {
-            console.log("An error occured", err);
-            return;
-          } else {
-            if (res) {
-              // this.initialState.amount_holding = res;
-              console.log(res);
-            }
-          }
-        });
+    async getBalance() {
+      const response = await this.initialState.smartContract.methods.balanceOf(
+        this.initialState.account
+      );
+
+      let call = await response.call();
+
+      return parseInt(call);
     },
     async connectWallet() {
       if (this.metamaskIsInstalled) {
@@ -130,9 +142,11 @@ export default {
 
             this.initialState.smartContract = SmartContractObj;
 
-            console.log(this.initialState);
-
-            this.getBalance();
+            await this.getBalance().then((amount) => {
+              setTimeout(() => {
+                this.initialState.amount_holding = amount;
+              }, 1000);
+            });
           } else {
             alert("Change to the correct network.");
           }
@@ -142,6 +156,36 @@ export default {
       } else {
         alert("metamask is not installed.");
       }
+    },
+
+    onEnterComic() {
+      this.$bvModal.hide("wallet-modal");
+    },
+
+    onNextPage() {
+      console.log(this.right_page);
+
+      this.current_page += 1;
+
+      this.right_page.style.transform =
+        "0.9s cubic-bezier(0.645, 0.045, 0.355, 1)";
+
+      this.right_page.style.transform = "rotateY(-180deg)";
+
+      // this.right_img.src = "/images/" + this.current_page + ".png";
+    },
+
+    onPreviousPage() {
+      console.log(this.left_page.src);
+
+      this.current_page -= 1;
+
+      this.left_img.src = "/images/" + this.current_page + ".png";
+
+      this.left_page.style.transform =
+        "0.9s cubic-bezier(0.645, 0.045, 0.355, 1)";
+
+      // this.left_page.style.transform = "rotateY(180deg)";
     },
   },
 };
@@ -164,6 +208,10 @@ export default {
   src: url("~assets/fonts/Market.ttf") format("truetype");
 }
 
+.modal-backdrop {
+  opacity: 0.9;
+}
+
 .book {
   display: flex;
   perspective: 1200px;
@@ -172,11 +220,13 @@ export default {
     position: relative;
     width: 50%;
     height: 100%;
+    padding: 0;
     display: grid;
     transform: rotateY(0deg);
     transition: transform 0.9s cubic-bezier(0.645, 0.045, 0.355, 1);
     transform-origin: 0% 0%;
     &--1 {
+      cursor: pointer;
       img {
         width: 100%;
         max-width: 100%;
@@ -188,7 +238,6 @@ export default {
       cursor: pointer;
       position: absolute;
       right: 0;
-      pointer-events: none;
 
       img {
         width: 100%;
@@ -199,31 +248,14 @@ export default {
 
     &--3 {
       cursor: pointer;
+      position: absolute;
+      right: 0;
 
       img {
         width: 100%;
         max-width: 100%;
         height: auto;
       }
-    }
-
-    &--4 {
-      cursor: pointer;
-
-      img {
-        width: 100%;
-        max-width: 100%;
-        height: auto;
-      }
-    }
-  }
-
-  input[type="radio"] {
-    display: none;
-
-    &:checked + .book__page {
-      transition: transform 0.9s cubic-bezier(0.645, 0.045, 0.355, 1);
-      transform: rotateY(-180deg);
     }
   }
 }
